@@ -18,7 +18,7 @@ return new class extends Migration
             $table->string('description');
             $table->integer('index');
             $table->date('start_date');
-            $table->date('end_date');
+            $table->date('end_date')->nullable();
             $table->timestamps();
         });
     }
