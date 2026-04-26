@@ -1,0 +1,19 @@
+@startuml CD-03-MaticeRizik
+skinparam roundcorner 5
+
+object "Manager" as User
+object "Livewire\nRiskMatrix" as LW
+object "RiskController" as RC
+object "Risk Model" as RM
+object "SQLite DB" as DB
+
+User --> LW : 1: Přepnutí na záložku "Matice"
+LW --> RC : 2: loadMatrix(project_id)
+RC --> RM : 3: Risk::where(project_id)->get()
+RM --> DB : 4: SELECT probability, impact, name
+DB --> RM : 5: kolekce rizik
+RM --> RC : 6: Risk Collection
+RC --> LW : 7: data (x, y, label)
+LW --> User : 8: SVG matice s barevnými zónami
+
+@enduml

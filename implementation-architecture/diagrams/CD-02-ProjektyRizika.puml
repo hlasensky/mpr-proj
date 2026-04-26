@@ -1,0 +1,19 @@
+@startuml CD-02-ProjektyRizika
+skinparam roundcorner 5
+
+object "Manager" as User
+object "Livewire\nKomponenta" as LW
+object "Controller" as Ctrl
+object "Model\n(Project / Risk)" as Model
+object "SQLite DB" as DB
+
+User --> LW : 1: Akce uživatele (klik, vyplnění formuláře)
+LW --> Ctrl : 2: Livewire Action (store / update / delete)
+Ctrl --> Model : 3: Eloquent dotaz (create / find / update)
+Model --> DB : 4: SQL dotaz
+DB --> Model : 5: výsledek
+Model --> Ctrl : 6: objekt / kolekce
+Ctrl --> LW : 7: aktualizace stavu
+LW --> User : 8: re-render UI (bez page refresh)
+
+@enduml

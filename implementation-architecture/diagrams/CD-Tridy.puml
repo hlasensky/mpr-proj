@@ -1,0 +1,53 @@
+@startuml CD-Tridy
+skinparam classAttributeIconSize 0
+skinparam roundcorner 5
+skinparam classBorderThickness 1.5
+
+class User {
+    + id : int
+    + name : string
+    + email : string
+    - password : string
+    + role : string <<super-manager|project-manager|unverified>>
+    + created_at : datetime
+    + updated_at : datetime
+    --
+    + projects() : HasMany
+}
+
+class Project {
+    + id : int
+    + name : string
+    + description : string
+    + start_date : date
+    + end_date : date
+    + owner_id : int <<FK>>
+    + created_at : datetime
+    + updated_at : datetime
+    --
+    + owner() : BelongsTo
+    + risks() : HasMany
+    + getRiskScore() : float
+}
+
+class Risk {
+    + id : int
+    + name : string
+    + project_id : int <<FK>>
+    + probability : int <<1–5>>
+    + impact : int <<1–5>>
+    + status : string <<open|mitigated|closed>>
+    + description : string
+    + mitigation_plan : string
+    + created_at : datetime
+    + updated_at : datetime
+    --
+    + project() : BelongsTo
+    + getScoreAttribute() : int
+    + getSeverityAttribute() : string
+}
+
+User "1" --> "0..*" Project : owns >
+Project "1" *-- "0..*" Risk : contains >
+
+@enduml

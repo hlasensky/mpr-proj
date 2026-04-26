@@ -1,0 +1,21 @@
+@startuml SD-05-MaticeRizik
+skinparam sequenceArrowThickness 2
+skinparam roundcorner 5
+
+actor "Manager" as User
+participant "Livewire\nRiskMatrix" as LW
+participant "RiskController" as RC
+participant "Risk Model" as RM
+database "SQLite DB" as DB
+
+User -> LW : Klikne na záložku\n"Matice rizik"
+LW -> RC : Livewire Action: loadMatrix(project_id)
+RC -> RM : Risk::where('project_id', id)\n->get(['probability','impact','name'])
+RM -> DB : SELECT FROM risks\nWHERE project_id = ?
+DB --> RM : kolekce rizik
+RM --> RC : kolekce rizik
+RC --> LW : data rizik (pravděpodobnost, dopad)
+LW -> LW : Výpočet pozic v matici 5×5\n(osa X = pravděpodobnost, osa Y = dopad)
+LW --> User : Vykreslení SVG/HTML matice\ns barevnými zónami a body rizik
+
+@enduml

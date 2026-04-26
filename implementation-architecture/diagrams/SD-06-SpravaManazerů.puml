@@ -1,0 +1,53 @@
+@startuml SD-06-SpravaManazerů
+skinparam sequenceArrowThickness 2
+skinparam roundcorner 5
+
+actor "Super Manager" as Admin
+participant "Livewire\nManagerList" as LW
+participant "ManagerController" as MC
+participant "User Model" as MM
+database "SQLite DB" as DB
+
+Admin -> LW : Otevře sekci\n"Správa manažerů"
+LW -> MC : Livewire Action: loadManagers()
+MC -> MM : User::all()
+MM -> DB : SELECT FROM user
+DB --> MM : seznam uživatelů
+MM --> MC : User Collection
+MC --> LW : seznam manažerů
+LW --> Admin : Zobrazení tabulky manažerů
+
+== Změna role ==
+
+Admin -> LW : Vybere uživatele a zvolí novou roli\n(unverified / project_manager / super_manager)
+LW -> MC : Livewire Action: updateRole(user_id, role)
+MC -> MM : User::updateOrFail(['role' => role], user_id)
+MM -> DB : UPDATE user SET role = ?
+DB --> MM : OK
+MM --> MC : aktualizovaný User
+MC --> LW : Aktualizace řádku v tabulce
+LW --> Admin : Role změněna
+
+== Smazání uživatele ==
+
+Admin -> LW : Klikne "Smazat" u vybraného uživatele
+LW --> Admin : Potvrzovací dialog
+Admin -> LW : Potvrdí smazání
+LW -> MC : Livewire Action: destroy(user_id)
+MC -> MM : User::findOrFail(user_id)
+MM -> DB : SELECT FROM user WHERE id = ?
+DB --> MM : User záznam
+
+alt Uživatel nenalezen
+    MC --> LW : ModelNotFoundException
+    LW --> Admin : Chyba – uživatel neexistuje
+else Uživatel nalezen
+    MC -> MM : user->delete()
+    MM -> DB : DELETE FROM user WHERE id = ?
+    DB --> MM : OK
+    MM --> MC : true
+    MC --> LW : Odebrání řádku ze seznamu
+    LW --> Admin : Uživatel smazán
+end
+
+@enduml

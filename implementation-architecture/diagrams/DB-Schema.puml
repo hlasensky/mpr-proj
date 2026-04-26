@@ -1,0 +1,46 @@
+@startuml DB-Schema
+skinparam roundcorner 5
+hide methods
+hide stereotypes
+
+entity "user" as user {
+    * id : INTEGER <<PK, AI>>
+    --
+    * name : VARCHAR(255)
+    * email : VARCHAR(255) <<UNIQUE>>
+    * password : VARCHAR(255)
+    * role : VARCHAR(50) <<default: 'unverified'>>
+    * created_at : DATETIME
+    * updated_at : DATETIME
+}
+
+entity "projects" as projects {
+    * id : INTEGER <<PK, AI>>
+    --
+    * name : VARCHAR(255)
+    description : TEXT
+    * start_date : DATE
+    end_date : DATE
+    * owner_id : INTEGER <<FK>>
+    * created_at : DATETIME
+    * updated_at : DATETIME
+}
+
+entity "risks" as risks {
+    * id : INTEGER <<PK, AI>>
+    --
+    * name : VARCHAR(255)
+    * project_id : INTEGER <<FK>>
+    * probability : INTEGER <<1–10>>
+    * impact : INTEGER <<1–10>>
+    * status : VARCHAR(50) <<default: 'open'>>
+    description : TEXT
+    mitigation_plan : TEXT
+    * created_at : DATETIME
+    * updated_at : DATETIME
+}
+
+user ||--o{ projects : "owner_id"
+projects ||--|{ risks : "project_id (CASCADE DELETE)"
+
+@enduml

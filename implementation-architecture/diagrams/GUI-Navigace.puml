@@ -1,0 +1,19 @@
+@startuml GUI-Navigace
+skinparam roundcorner 5
+skinparam rectangleBackgroundColor #F0F4FF
+skinparam arrowThickness 1.5
+
+rectangle "Login / Register" as Auth
+rectangle "Dashboard\n(Seznam projektů)" as Dashboard
+rectangle "Detail projektu\n(Seznam rizik – tabulka)" as ProjDetail
+rectangle "Detail projektu\n(Matice rizik)" as RiskMatrix
+rectangle "Správa manažerů\n(pouze Admin)" as Managers
+rectangle "Nastavení profilu" as Profile
+
+Auth --> Dashboard : přihlášení / registrace
+Dashboard --> ProjDetail : výběr projektu
+ProjDetail --> RiskMatrix : přepnutí záložky
+Dashboard --> Managers : sidebar (Admin)
+Dashboard --> Profile : sidebar / ikona uživatele
+
+@enduml

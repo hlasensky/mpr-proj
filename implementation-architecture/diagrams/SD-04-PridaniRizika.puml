@@ -1,0 +1,34 @@
+@startuml SD-04-PridaniRizika
+skinparam sequenceArrowThickness 2
+skinparam roundcorner 5
+
+actor "Manager" as User
+participant "Livewire\nRiskForm" as LW
+participant "RiskController" as RC
+participant "Risk Model" as RM
+database "SQLite DB" as DB
+
+User -> LW : Klikne "Přidat riziko"\nv detailu projektu
+LW --> User : Zobrazení formuláře
+
+User -> LW : Zadá název, dopad (1–5),\npravděpodobnost (1–5), popis
+LW -> LW : Real-time Livewire validace
+LW --> User : Okamžitá zpětná vazba
+
+User -> LW : Klikne "Uložit"
+LW -> RC : Livewire Action: store(data)
+RC -> RC : Ověření dopad ∈ [1,5]\na pravděpodobnost ∈ [1,5]
+
+alt Nevalidní hodnoty
+    RC --> LW : ValidationException
+    LW --> User : Chybová hláška\n"Hodnota musí být 1–5"
+else Validní data
+    RC -> RM : Risk::create(name, project_id,\nprobability, impact, status='open', ...)
+    RM -> DB : INSERT INTO risks
+    DB --> RM : nový záznam
+    RM --> RC : Risk objekt
+    RC --> LW : Aktualizace seznamu rizik
+    LW --> User : Riziko se zobrazí v tabulce
+end
+
+@enduml

@@ -1,0 +1,37 @@
+@startuml SD-07-OvereniUzivatele
+skinparam sequenceArrowThickness 2
+skinparam roundcorner 5
+
+actor "Super Manager" as Admin
+participant "Livewire\nManagerList" as LW
+participant "ManagerController" as MC
+participant "User Model" as UM
+database "SQLite DB" as DB
+
+Admin -> LW : Otevře sekci\n"Správa manažerů"
+LW -> MC : loadUnverified()
+MC -> UM : User::where('role', 'unverified')->get()
+UM -> DB : SELECT FROM users\nWHERE role = 'unverified'
+DB --> UM : kolekce nových uživatelů
+UM --> MC : User Collection
+MC --> LW : seznam neověřených uživatelů
+LW --> Admin : Zobrazení tabulky\ns neověřenými uživateli
+
+Admin -> LW : Klikne "Ověřit"\nu konkrétního uživatele
+LW -> MC : verify(user_id)
+MC -> UM : User::updateOrFail(\n  ['role' => 'project_manager'],\n  user_id\n)
+UM -> DB : UPDATE users SET role = 'project_manager'\nWHERE id = ?
+
+alt Uživatel nenalezen (ModelNotFoundException)
+    DB --> UM : 0 rows affected
+    UM --> MC : ModelNotFoundException
+    MC --> LW : Chyba 404
+    LW --> Admin : Upozornění
+else Aktualizace proběhla
+    DB --> UM : 1 row affected
+    UM --> MC : aktualizovaný User objekt
+    MC --> LW : Aktualizace seznamu
+    LW --> Admin : Uživatel zmizí ze seznamu\nneověřených, role změněna
+end
+
+@enduml

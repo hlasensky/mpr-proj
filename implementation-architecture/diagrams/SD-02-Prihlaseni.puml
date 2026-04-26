@@ -1,0 +1,29 @@
+@startuml SD-02-Prihlaseni
+skinparam sequenceArrowThickness 2
+skinparam roundcorner 5
+
+actor "Uživatel" as User
+participant "Prohlížeč\n(Livewire)" as Browser
+participant "LoginController" as Auth
+participant "User Model" as Model
+database "SQLite DB" as DB
+
+User -> Browser : Zadá e-mail a heslo,\nklikne "Přihlásit se"
+Browser -> Auth : POST /login
+Auth -> Model : User::where('email', email)
+Model -> DB : SELECT FROM user
+DB --> Model : záznam manažera
+Model --> Auth : Manager objekt
+
+alt Uživatel nenalezen nebo heslo nesprávné
+    Auth --> Browser : Chybová zpráva\n"Nesprávné přihlašovací údaje"
+    Browser --> User : Zobrazení chyby
+else Přihlašovací údaje jsou správné
+    Auth -> Auth : Hash::check(heslo, hash)
+    Auth -> Auth : Auth::login(manager)
+    Auth -> Auth : Vytvoření session tokenu\n(Laravel Sanctum)
+    Auth --> Browser : redirect /dashboard (HTTP 302)
+    Browser --> User : Zobrazení dashboardu
+end
+
+@enduml

@@ -1,0 +1,32 @@
+@startuml SD-01-Registrace
+skinparam sequenceArrowThickness 2
+skinparam roundcorner 5
+skinparam sequenceParticipant underline
+
+actor "Uživatel" as User
+participant "Prohlížeč\n(Livewire)" as Browser
+participant "RegisterController" as Auth
+participant "User Model" as Model
+database "SQLite DB" as DB
+
+User -> Browser : Vyplní formulář\n(jméno, e-mail, heslo)
+Browser -> Auth : POST /register
+Auth -> Model : User::where('email', email)
+Model -> DB : SELECT
+DB --> Model : výsledek
+Model --> Auth : výsledek
+
+alt E-mail je již obsazen
+    Auth --> Browser : ValidationException (e-mail exists)
+    Browser --> User : Chybová hláška pod polem e-mail
+else E-mail je volný
+    Auth -> Model : User::create(name, email, bcrypt(heslo), role='unverified')
+    Model -> DB : INSERT INTO Users
+    DB --> Model : nový záznam
+    Model --> Auth : User objekt
+    Auth -> Auth : Auth::login(User)
+    Auth --> Browser : redirect /dashboard (HTTP 302)
+    Browser --> User : Zobrazení dashboardu
+end
+
+@enduml

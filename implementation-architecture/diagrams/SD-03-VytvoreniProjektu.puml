@@ -1,0 +1,32 @@
+@startuml SD-03-VytvoreniProjektu
+skinparam sequenceArrowThickness 2
+skinparam roundcorner 5
+
+actor "Manager" as User
+participant "Livewire\nProjectForm" as LW
+participant "ProjectController" as PC
+participant "Project Model" as PM
+database "SQLite DB" as DB
+
+User -> LW : Klikne "Nový projekt"
+LW --> User : Zobrazení formuláře
+
+User -> LW : Vyplní název, popis, termín\na klikne "Uložit"
+LW -> PC : Livewire Action: store(data)
+PC -> PM : Project::where('name', name)\n->where('owner_id', user_id)
+PM -> DB : SELECT FROM projects
+DB --> PM : výsledek
+
+alt Projekt se stejným názvem již existuje
+    PC --> LW : ValidationException\n(duplicitní název)
+    LW --> User : Chyba pod polem Název
+else Název je unikátní
+    PC -> PM : Project::create(name, popis, termín, owner_id)
+    PM -> DB : INSERT INTO projects
+    DB --> PM : nový záznam
+    PM --> PC : Project objekt
+    PC --> LW : redirect /projects/{id}
+    LW --> User : Detail nového projektu
+end
+
+@enduml

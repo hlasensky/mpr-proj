@@ -1,0 +1,16 @@
+@startuml CD-01-Auth
+skinparam roundcorner 5
+
+object "Uživatel" as User
+object "Register/LoginController" as Auth
+object "User Model" as Model
+object "SQLite DB" as DB
+
+User --> Auth : 1: POST /register nebo /login
+Auth --> Model : 2: where('email') / create()
+Model --> DB : 3: SELECT / INSERT
+DB --> Model : 4: výsledek dotazu
+Model --> Auth : 5: Manager objekt
+Auth --> User : 6: redirect /dashboard nebo chyba
+
+@enduml
