@@ -2,22 +2,40 @@
 
 namespace Database\Seeders;
 
+use App\Enums\RoleEnum;
+use App\Models\Project;
+use App\Models\Risk;
 use App\Models\User;
-// use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
 
 class DatabaseSeeder extends Seeder
 {
-    /**
-     * Seed the application's database.
-     */
     public function run(): void
     {
-        // User::factory(10)->create();
-
-        User::factory()->create([
-            'name' => 'Test User',
+        $admin = User::factory()->create([
+            'name' => 'Test Admin',
             'email' => 'test@example.com',
+            'role' => RoleEnum::Admin,
+            'password' => bcrypt('password'),
         ]);
+
+        $managers = User::factory(4)->create([
+            'role' => RoleEnum::Manager,
+        ]);
+
+        $allUsers = $managers->prepend($admin);
+
+        $allUsers->each(function (User $user) use ($allUsers) {
+            Project::factory(3)
+                ->for($user)
+                ->create()
+                ->each(function (Project $project) use ($allUsers) {
+                    Risk::factory(5)
+                        ->for($project)
+                        ->create([
+                            'user_id' => $allUsers->random()->id,
+                        ]);
+                });
+        });
     }
 }
