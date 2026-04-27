@@ -55,6 +55,40 @@ enum RiskLevelCategoryEnum: string
         };
     }
 
+    /** Gradient bg class for 10×10 matrix cells, intensity increases with score (1–100). */
+    public static function gradientCellClass(int $score): string
+    {
+        return match (true) {
+            $score <= 3 => 'bg-green-300 dark:bg-green-800/50',
+            $score <= 6 => 'bg-green-500 dark:bg-green-700/60',
+            $score <= 10 => 'bg-lime-300 dark:bg-lime-800/50',
+            $score <= 15 => 'bg-yellow-300 dark:bg-yellow-700/50',
+            $score <= 21 => 'bg-yellow-500 dark:bg-yellow-600/60',
+            $score <= 28 => 'bg-orange-400 dark:bg-orange-700/60',
+            $score <= 36 => 'bg-orange-600 dark:bg-orange-700/70',
+            $score <= 50 => 'bg-red-500 dark:bg-red-700/70',
+            $score <= 70 => 'bg-red-700 dark:bg-red-800/80',
+            default => 'bg-red-900 dark:bg-red-950/90',
+        };
+    }
+
+    /** Chip class matched to the gradient cell color (score 1–100). */
+    public static function gradientChipClass(int $score): string
+    {
+        return match (true) {
+            $score <= 3 => 'bg-green-100 text-green-900 dark:bg-green-700 dark:text-green-100',
+            $score <= 6 => 'bg-green-200 text-green-900 dark:bg-green-600 dark:text-green-100',
+            $score <= 10 => 'bg-lime-100 text-lime-900 dark:bg-lime-700 dark:text-lime-100',
+            $score <= 15 => 'bg-yellow-100 text-yellow-900 dark:bg-yellow-600 dark:text-yellow-100',
+            $score <= 21 => 'bg-yellow-200 text-yellow-900 dark:bg-yellow-500 dark:text-yellow-950',
+            $score <= 28 => 'bg-orange-100 text-orange-900 dark:bg-orange-600 dark:text-orange-100',
+            $score <= 36 => 'bg-orange-200 text-orange-900 dark:bg-orange-500 dark:text-orange-950',
+            $score <= 50 => 'bg-red-100 text-red-900 dark:bg-red-600 dark:text-red-100',
+            $score <= 70 => 'bg-red-200 text-red-950 dark:bg-red-500 dark:text-red-100',
+            default => 'bg-red-300 text-red-950 dark:bg-red-400 dark:text-red-950',
+        };
+    }
+
     /** Full Tailwind classes for risk chip inside the cell. */
     public function chipClass(): string
     {

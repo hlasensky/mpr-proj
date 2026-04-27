@@ -60,7 +60,8 @@ class RiskEditor extends Component
 
         session()->flash('success', 'Riziko uloženo.');
 
-        $this->redirect(url()->previous(), navigate: true);
+        $this->redirect(route('risk.overview', $this->risk->project_id), navigate: true);
+        // $this->redirect(url()->previous(), navigate: true);
     }
 
     public function render()

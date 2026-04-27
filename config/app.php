@@ -78,11 +78,13 @@ return [
     |
     */
 
-    'locale' => env('APP_LOCALE', 'en'),
+    // Corrected to 'cs' for the language
+    'locale' => env('APP_LOCALE', 'cs'),
 
     'fallback_locale' => env('APP_FALLBACK_LOCALE', 'en'),
 
-    'faker_locale' => env('APP_FAKER_LOCALE', 'en_US'),
+    // This is correct for Faker (Language_COUNTRY)
+    'faker_locale' => env('APP_FAKER_LOCALE', 'cs_CZ'),
 
     /*
     |--------------------------------------------------------------------------
