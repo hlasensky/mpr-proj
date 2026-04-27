@@ -16,7 +16,8 @@ return new class extends Migration
             $table->string('name');
             $table->foreignId('user_id')->nullable()->constrained()->nullOnDelete();
             $table->foreignId('project_id')->constrained()->cascadeOnDelete();
-            $table->string('level')->nullable();
+            $table->unsignedTinyInteger('impact')->default(1);
+            $table->unsignedTinyInteger('likelihood')->default(1);
             $table->timestamps();
         });
     }

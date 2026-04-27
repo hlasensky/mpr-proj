@@ -15,6 +15,11 @@
                     <flux:sidebar.item icon="home" :href="route('dashboard')" :current="request()->routeIs('dashboard')" wire:navigate>
                         {{ __('Dashboard') }}
                     </flux:sidebar.item>
+                    @role(\App\Enums\RoleEnum::Admin)
+                        <flux:sidebar.item icon="users" :href="route('user.overview')" :current="request()->routeIs('user.*')" wire:navigate>
+                            {{ __('Správa manažerů') }}
+                        </flux:sidebar.item>
+                    @endrole
                 </flux:sidebar.group>
             </flux:sidebar.nav>
 

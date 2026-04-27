@@ -2,36 +2,40 @@
 
 namespace App\Livewire;
 
-use App\Enums\RoleEnum;
 use App\Models\Project;
 use App\Models\Risk;
-use Illuminate\Support\Collection;
-use Illuminate\Support\Facades\Auth;
+use Illuminate\Database\Eloquent\Collection;
+use Livewire\Attributes\Layout;
 use Livewire\Component;
 
+#[Layout('layouts.app')]
 class RiskOverview extends Component
 {
     public Project $project;
-    public Collection $risks;
-    protected $passedID;
-    public function mount($projectID)
-    {
-        $this->passedID = $projectID;
-        $this->load();
-    }
-    public function load()
-    {
-        $this->project = Project::findOrFail($this->passedID);
-        $this->risks = $this->project->risks;
 
+    public Collection $risks;
+
+    public function mount(int $projectID): void
+    {
+        $this->project = Project::findOrFail($projectID);
+        $this->risks = $this->project->risks()->get();
     }
-    public function delete($riskID)
+
+    public function deleteRisk(int $riskID): void
     {
         Risk::destroy($riskID);
-        $this->load();
+        $this->risks = $this->project->risks()->get();
     }
+
+    public function deleteProject(): void
+    {
+        $this->project->delete();
+
+        $this->redirect(route('dashboard'), navigate: true);
+    }
+
     public function render()
     {
-        return view('livewire.risk-overview')->layout('layouts.app');
+        return view('livewire.risk-overview');
     }
 }

@@ -2,7 +2,10 @@
 
 namespace App\Providers;
 
+use App\Enums\RoleEnum;
 use Carbon\CarbonImmutable;
+use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Blade;
 use Illuminate\Support\Facades\Date;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\ServiceProvider;
@@ -24,6 +27,18 @@ class AppServiceProvider extends ServiceProvider
     public function boot(): void
     {
         $this->configureDefaults();
+        Blade::if('role', function (RoleEnum ...$roles) {
+            $user = Auth::user();
+
+            if (! $user) {
+                return false;
+            }
+
+            // Extract string values from the passed Enums
+            $allowedRoles = array_map(fn ($r) => $r->value, $roles);
+
+            return in_array($user->role?->value, $allowedRoles);
+        });
     }
 
     /**
@@ -37,7 +52,8 @@ class AppServiceProvider extends ServiceProvider
             app()->isProduction(),
         );
 
-        Password::defaults(fn (): ?Password => app()->isProduction()
+        Password::defaults(
+            fn (): ?Password => app()->isProduction()
             ? Password::min(12)
                 ->mixedCase()
                 ->letters()
