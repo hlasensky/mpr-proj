@@ -1,6 +1,11 @@
 <div>
     @php
         use App\Enums\RiskLevelCategoryEnum;
+        use App\Enums\RiskLevelEnum;
+        use App\Enums\RiskProbabilityEnum;
+
+        $likBands = RiskProbabilityEnum::bands();
+        $impBands = RiskLevelEnum::bands();
 
         $byCell = [];
         foreach ($risks as $r) {
@@ -10,6 +15,7 @@
         $totalRisks = $risks->count();
         $avgScore = $totalRisks > 0 ? round($risks->avg(fn($r) => $r->score()), 1) : '—';
         $maxScore = $totalRisks > 0 ? $risks->max(fn($r) => $r->score()) : '—';
+        $topBand = $totalRisks > 0 ? RiskLevelCategoryEnum::matrixBand($maxScore) : 1;
     @endphp
 
     {{-- Page header --}}
@@ -17,7 +23,6 @@
         <div class="max-w-2xl">
             <div class="mb-1 flex flex-wrap items-center gap-2">
                 @if ($totalRisks > 0)
-                    @php $topBand = RiskLevelCategoryEnum::matrixBand($maxScore); @endphp
                     <span class="inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-xs font-semibold"
                         style="background: color-mix(in oklab, var(--risk-{{ $topBand }}) 15%, var(--bg-elev)); color: var(--risk-{{ $topBand }}); border: 1px solid color-mix(in oklab, var(--risk-{{ $topBand }}) 30%, transparent);">
                         <span class="size-1.5 rounded-full" style="background: var(--risk-{{ $topBand }});"></span>
@@ -82,242 +87,259 @@
         </div>
     </div>
 
-    {{-- Risk matrix card --}}
-    <div class="mb-6 rounded-(--radius) border"
-        style="background: var(--bg-elev); border-color: var(--border); box-shadow: var(--shadow-sm);">
-        <div class="flex items-center justify-between border-b px-5 py-4" style="border-color: var(--border);">
-            <div>
-                <div class="text-sm font-semibold tracking-tight" style="color: var(--fg);">Matice rizik</div>
-                <div class="mt-0.5 text-xs" style="color: var(--fg-subtle);">Vizualizace dopadu a pravděpodobnosti</div>
-            </div>
-            <div class="flex overflow-hidden rounded-sm border text-xs font-medium"
-                style="border-color: var(--border);">
-                <button wire:click="$set('matrixView', 'grid')" class="px-3 py-1.5 transition-colors"
-                    style="{{ $matrixView === 'grid' ? 'background: var(--bg-hover); color: var(--fg);' : 'background: var(--bg-elev); color: var(--fg-muted);' }}">
-                    Mřížka
-                </button>
-                <button wire:click="$set('matrixView', 'bubble')" class="border-l px-3 py-1.5 transition-colors"
-                    style="border-color: var(--border); {{ $matrixView === 'bubble' ? 'background: var(--bg-hover); color: var(--fg);' : 'background: var(--bg-elev); color: var(--fg-muted);' }}">
-                    Bubliny
-                </button>
-            </div>
-        </div>
+    {{-- Matrix + List: 50/50 grid on xl, stacked below --}}
+    <div class="flex flex-col min-[1600px]:grid min-[1600px]:grid-cols-2 gap-6" x-data="{ activeRisk: null }">
 
-        <div class="p-5">
-            @if ($matrixView === 'grid')
-                {{-- 10×10 grid matrix --}}
-                @php
-                    $impCategories = [
-                        ['label' => 'Nízký', 'col' => '2/4'],
-                        ['label' => 'Střední', 'col' => '4/6'],
-                        ['label' => 'Normální', 'col' => '6/8'],
-                        ['label' => 'Vysoký', 'col' => '8/10'],
-                        ['label' => 'Velmi vysoký', 'col' => '10/12'],
-                    ];
-                    $likCategories = [
-                        ['label' => 'Velmi velká', 'row' => '2/4'],
-                        ['label' => 'Velká', 'row' => '4/6'],
-                        ['label' => 'Střední', 'row' => '6/8'],
-                        ['label' => 'Nízká', 'row' => '8/10'],
-                        ['label' => 'Velmi nízká', 'row' => '10/12'],
-                    ];
-                @endphp
-
-                <div class="flex gap-3">
-                    <div class="flex items-center justify-center">
-                        <span class="text-xs font-medium [writing-mode:vertical-rl] rotate-180"
-                            style="color: var(--fg-subtle);">Pravděpodobnost →</span>
+        {{-- Risk matrix card --}}
+        <div class="rounded-(--radius) border"
+            style="background: var(--bg-elev); border-color: var(--border); box-shadow: var(--shadow-sm);">
+            <div class="flex items-center justify-between border-b px-5 py-4" style="border-color: var(--border);">
+                <div>
+                    <div class="text-sm font-semibold tracking-tight" style="color: var(--fg);">Matice rizik</div>
+                    <div class="mt-0.5 text-xs" style="color: var(--fg-subtle);">Vizualizace dopadu a pravděpodobnosti
                     </div>
-                    <div class="flex-1 overflow-x-auto">
-                        <div class="grid min-w-160" style="grid-template-columns: 5.5rem repeat(10, 1fr)">
+                </div>
+                <div class="flex overflow-hidden rounded-sm border text-xs font-medium"
+                    style="border-color: var(--border);">
+                    <button wire:click="$set('matrixView', 'grid')" class="px-3 py-1.5 transition-colors"
+                        style="{{ $matrixView === 'grid' ? 'background: var(--bg-hover); color: var(--fg);' : 'background: var(--bg-elev); color: var(--fg-muted);' }}">
+                        Mřížka
+                    </button>
+                    <button wire:click="$set('matrixView', 'bubble')" class="border-l px-3 py-1.5 transition-colors"
+                        style="border-color: var(--border); {{ $matrixView === 'bubble' ? 'background: var(--bg-hover); color: var(--fg);' : 'background: var(--bg-elev); color: var(--fg-muted);' }}">
+                        Bubliny
+                    </button>
+                </div>
+            </div>
 
-                            <div style="grid-row: 1; grid-column: 1"></div>
+            <div class="p-4">
+                @if ($matrixView === 'grid')
+                    <div class="flex gap-2">
+                        {{-- Y-axis label --}}
+                        <div class="flex items-center">
+                            <span class="text-xs font-medium [writing-mode:vertical-rl] rotate-180"
+                                style="color: var(--fg-subtle);">Pravděpodobnost →</span>
+                        </div>
 
-                            @foreach ($impCategories as $cat)
-                                <div style="grid-row: 1; grid-column: {{ $cat['col'] }}"
-                                    class="pb-1 text-center text-xs font-semibold" style="color: var(--fg-muted);">
-                                    {{ $cat['label'] }}
+                        <div class="flex-1 min-w-0">
+                            {{-- Impact column headers (5 labels, each spanning 2 of 10 columns) --}}
+                            <div class="grid grid-cols-10 mb-1 ml-[3.75rem]">
+                                @foreach ($impBands as $ib)
+                                    <div class="col-span-2 text-center text-xs font-medium truncate px-0.5"
+                                        style="color: var(--fg-muted);">{{ $ib['label'] }}</div>
+                                @endforeach
+                            </div>
+
+                            {{-- Row labels + 10×10 data grid --}}
+                            <div class="flex items-start">
+                                {{-- 5 likelihood labels, each flex-1 = 2 grid rows --}}
+                                <div class="flex flex-col shrink-0 self-stretch" style="width: 3.75rem;">
+                                    @foreach ($likBands as $lb)
+                                        <div class="flex flex-1 items-center justify-end pr-2 text-right text-xs font-medium leading-tight"
+                                            style="color: var(--fg-muted);">{{ $lb['label'] }}</div>
+                                    @endforeach
                                 </div>
-                            @endforeach
 
-                            @foreach ($likCategories as $cat)
-                                <div style="grid-row: {{ $cat['row'] }}; grid-column: 1"
-                                    class="flex items-center justify-end pr-2 text-right text-xs font-semibold leading-tight"
-                                    style="color: var(--fg-muted);">
-                                    {{ $cat['label'] }}
+                                {{-- 10×10 square grid --}}
+                                <div class="flex-1 aspect-square grid grid-cols-10 grid-rows-10">
+                                    @foreach ([10, 9, 8, 7, 6, 5, 4, 3, 2, 1] as $lik)
+                                        @foreach ([1, 2, 3, 4, 5, 6, 7, 8, 9, 10] as $imp)
+                                            @php
+                                                $score = $lik * $imp;
+                                                $band = RiskLevelCategoryEnum::matrixBand($score);
+                                                $cellRisks = $byCell[$lik][$imp] ?? [];
+                                                $shown = array_slice($cellRisks, 0, 2);
+                                                $extra = max(0, count($cellRisks) - 2);
+                                            @endphp
+                                            <div class="overflow-hidden border border-white/10 flex flex-col items-center justify-center gap-px p-px"
+                                                style="background: color-mix(in oklab, var(--risk-{{ $band }}) 55%, var(--bg));">
+                                                @foreach ($shown as $risk)
+                                                    <a href="#risk-{{ $risk->id }}"
+                                                        class="font-mono font-normal leading-none hover:opacity-70 truncate w-full text-center rounded-sm"
+                                                        style="font-size: 11px; padding: 1px 2px; color: #fff; background: color-mix(in oklab, var(--risk-{{ $band }}) 85%, var(--bg)); outline: 1px solid color-mix(in oklab, var(--risk-{{ $band }}) 60%, black); text-shadow: 0 1px 2px rgba(0,0,0,0.3);"
+                                                        title="{{ $risk->name }}"
+                                                        @mouseenter="activeRisk = {{ $risk->id }}"
+                                                        @mouseleave="activeRisk = null">
+                                                        #{{ str_pad($risk->id, 3, '0', STR_PAD_LEFT) }}
+                                                    </a>
+                                                @endforeach
+                                                @if ($extra > 0)
+                                                    <span class="font-bold leading-none text-center w-full"
+                                                        style="font-size: 9px; color: rgba(255,255,255,0.85);">+{{ $extra }}</span>
+                                                @endif
+                                            </div>
+                                        @endforeach
+                                    @endforeach
                                 </div>
-                            @endforeach
+                            </div>
 
-                            @foreach ([10, 9, 8, 7, 6, 5, 4, 3, 2, 1] as $rowIdx => $lik)
-                                @foreach ([1, 2, 3, 4, 5, 6, 7, 8, 9, 10] as $colIdx => $imp)
-                                    @php
-                                        $gridRow = $rowIdx + 2;
-                                        $gridCol = $colIdx + 2;
-                                        $score = $lik * $imp;
-                                        $band = RiskLevelCategoryEnum::matrixBand($score);
-                                        $cellRisks = $byCell[$lik][$imp] ?? [];
-                                        $shown = array_slice($cellRisks, 0, 2);
-                                        $extra = count($cellRisks) - count($shown);
-                                    @endphp
-                                    <div style="grid-row: {{ $gridRow }}; grid-column: {{ $gridCol }}; background: color-mix(in oklab, var(--risk-{{ $band }}) 55%, var(--bg));"
-                                        class="relative min-h-12 overflow-hidden border border-white/10 p-1">
-                                        @foreach ($shown as $risk)
-                                            <a href="{{ route('risk.editor', [$project->id, $risk->id]) }}"
-                                                wire:navigate
-                                                class="mb-0.5 flex items-center rounded px-1.5 py-0.5 text-xs font-medium leading-tight transition-opacity hover:opacity-80"
-                                                style="background: color-mix(in oklab, var(--risk-{{ $band }}) 80%, transparent); color: #fff;"
-                                                title="{{ $risk->name }}">
-                                                <span class="truncate">{{ $risk->name }}</span>
+                            {{-- X-axis label --}}
+                            <div class="mt-1 ml-[3.75rem] text-center text-xs font-medium"
+                                style="color: var(--fg-subtle);">→ Dopad</div>
+                        </div>
+                    </div>
+                @else
+                    {{-- Bubble view --}}
+                    <div class="flex gap-2">
+                        {{-- Y-axis label --}}
+                        <div class="flex items-center">
+                            <span class="text-xs font-medium [writing-mode:vertical-rl] rotate-180"
+                                style="color: var(--fg-subtle);">Pravděpodobnost →</span>
+                        </div>
+
+                        <div class="flex-1 min-w-0">
+                            {{-- Likelihood row labels + chart --}}
+                            <div class="flex items-stretch gap-1">
+                                {{-- Y-axis category labels (5 equal sections) --}}
+                                <div class="flex flex-col shrink-0" style="width: 3.75rem;">
+                                    @foreach ($likBands as $lb)
+                                        <div class="flex flex-1 items-center justify-end pr-2 text-right text-[10px] font-medium leading-tight"
+                                            style="color: var(--fg-muted);">{{ $lb['label'] }}</div>
+                                    @endforeach
+                                </div>
+
+                                {{-- Chart area --}}
+                                <div class="flex-1 min-w-0">
+                                    <div class="relative w-full"
+                                        style="height: 280px; border: 1px solid var(--border); border-radius: var(--radius-sm); background: var(--bg-sunken);">
+                                        @for ($i = 1; $i <= 9; $i++)
+                                            <div class="absolute top-0 h-full border-r"
+                                                style="left: {{ $i * 10 }}%; border-color: var(--border);"></div>
+                                            <div class="absolute left-0 w-full border-b"
+                                                style="top: {{ $i * 10 }}%; border-color: var(--border);"></div>
+                                        @endfor
+
+                                        @foreach ($risks as $risk)
+                                            @php
+                                                $s = $risk->score();
+                                                $band = RiskLevelCategoryEnum::matrixBand($s);
+                                                $size = 22 + $s * 0.4;
+                                                $left = (($risk->impact - 0.5) / 10) * 100;
+                                                $bot = (($risk->likelihood - 0.5) / 10) * 100;
+                                            @endphp
+                                            <a href="#risk-{{ $risk->id }}"
+                                                class="absolute flex items-center justify-center rounded-full text-xs font-semibold text-white transition-all hover:scale-110 hover:z-10"
+                                                title="{{ $risk->name }} ({{ $s }})"
+                                                style="width: {{ $size }}px; height: {{ $size }}px; left: calc({{ $left }}% - {{ $size / 2 }}px); bottom: calc({{ $bot }}% - {{ $size / 2 }}px); background: var(--risk-{{ $band }}); box-shadow: 0 0 0 2px var(--bg-elev), 0 2px 8px rgba(0,0,0,0.25);"
+                                                @mouseenter="activeRisk = {{ $risk->id }}"
+                                                @mouseleave="activeRisk = null">
+                                                {{ $s }}
                                             </a>
                                         @endforeach
-                                        @if ($extra > 0)
-                                            <span class="block text-center text-xs font-semibold"
-                                                style="color: rgba(255,255,255,0.7);">+{{ $extra }}</span>
-                                        @endif
                                     </div>
-                                @endforeach
-                            @endforeach
-                        </div>
 
-                        <div class="mt-1 pl-22 text-center text-xs font-medium" style="color: var(--fg-subtle);">→ Dopad
-                        </div>
-
-
-                    </div>
-                </div>
-            @else
-                {{-- Bubble view --}}
-                <div class="flex gap-3">
-                    <div class="flex items-center justify-center">
-                        <span class="text-xs font-medium [writing-mode:vertical-rl] rotate-180"
-                            style="color: var(--fg-subtle);">Pravděpodobnost →</span>
-                    </div>
-                    <div class="flex-1">
-                        <div class="relative"
-                            style="height: 340px; border: 1px solid var(--border); border-radius: var(--radius-sm); background: var(--bg-sunken);">
-                            {{-- Grid lines --}}
-                            @for ($i = 1; $i <= 9; $i++)
-                                <div class="absolute top-0 h-full border-r"
-                                    style="left: {{ $i * 10 }}%; border-color: var(--border);"></div>
-                                <div class="absolute left-0 w-full border-b"
-                                    style="top: {{ $i * 10 }}%; border-color: var(--border);"></div>
-                            @endfor
-
-                            {{-- Bubbles --}}
-                            @foreach ($risks as $risk)
-                                @php
-                                    $s = $risk->score();
-                                    $band = RiskLevelCategoryEnum::matrixBand($s);
-                                    $size = 22 + $s * 0.4;
-                                    $left = (($risk->impact - 0.5) / 10) * 100;
-                                    $bot = (($risk->likelihood - 0.5) / 10) * 100;
-                                @endphp
-                                <div class="absolute flex items-center justify-center rounded-full text-xs font-semibold text-white transition-transform hover:scale-110"
-                                    title="{{ $risk->name }} ({{ $s }})"
-                                    style="
-                                        width: {{ $size }}px;
-                                        height: {{ $size }}px;
-                                        left: calc({{ $left }}% - {{ $size / 2 }}px);
-                                        bottom: calc({{ $bot }}% - {{ $size / 2 }}px);
-                                        background: var(--risk-{{ $band }});
-                                        opacity: 0.9;
-                                        box-shadow: 0 2px 6px rgba(0,0,0,0.2);
-                                     ">
-                                    {{ $s }}
+                                    {{-- X-axis labels --}}
+                                    <div class="grid mt-1" style="grid-template-columns: repeat(5, 1fr);">
+                                        @foreach ($impBands as $ib)
+                                            <div class="text-center text-[10px] font-medium leading-tight"
+                                                style="color: var(--fg-subtle);">{{ $ib['label'] }}</div>
+                                        @endforeach
+                                    </div>
+                                    <div class="mt-0.5 text-center text-xs font-medium"
+                                        style="color: var(--fg-subtle);">→ Dopad</div>
                                 </div>
-                            @endforeach
-
-                            {{-- X-axis labels --}}
-                            @foreach (['Nízký', 'Střední', 'Normální', 'Vysoký', 'Velmi vysoký'] as $i => $lbl)
-                                <div class="absolute bottom-0 text-xs translate-y-6 -translate-x-1/2"
-                                    style="left: {{ ($i * 2 + 1) * 10 }}%; color: var(--fg-subtle);">
-                                    {{ $lbl }}</div>
-                            @endforeach
-
-                            {{-- Y-axis labels --}}
-                            @foreach (['Nízké', 'Střední', 'Vysoké', 'Nebezpečné', 'Extrémní'] as $i => $lbl)
-                                <div class="absolute left-0 text-xs -translate-x-full -translate-y-1/2 pr-2 text-right whitespace-nowrap"
-                                    style="bottom: {{ ($i * 2 + 1) * 10 }}%; color: var(--fg-subtle);">
-                                    {{ $lbl }}</div>
-                            @endforeach
-                        </div>
-                        <div class="mt-6 text-center text-xs font-medium" style="color: var(--fg-subtle);">→ Dopad
+                            </div>
                         </div>
                     </div>
-                </div>
-            @endif
+                @endif
+            </div>
         </div>
-    </div>
 
-    {{-- Risk table --}}
-    <div class="mb-3 flex items-center justify-between">
-        <div class="text-sm font-semibold tracking-tight" style="color: var(--fg);">Seznam rizik</div>
-    </div>
+        {{-- Risk list (compact) --}}
+        <div class="rounded-(--radius) border overflow-hidden"
+            style="background: var(--bg-elev); border-color: var(--border); box-shadow: var(--shadow-sm);">
+            <div class="flex items-center border-b px-5 py-4" style="border-color: var(--border);">
+                <div>
+                    <div class="text-sm font-semibold tracking-tight" style="color: var(--fg);">Seznam rizik</div>
+                    <div class="mt-0.5 text-xs" style="color: var(--fg-subtle);">Přehled všech rizik projektu</div>
+                </div>
+            </div>
 
-    <div class="rounded-(--radius) border overflow-hidden"
-        style="border-color: var(--border); box-shadow: var(--shadow-sm);">
-        <flux:table>
-            <flux:table.columns>
-                <flux:table.column></flux:table.column>
-                <flux:table.column>Název</flux:table.column>
-                <flux:table.column>Dopad</flux:table.column>
-                <flux:table.column>Pravděpodobnost</flux:table.column>
-                <flux:table.column>Skóre</flux:table.column>
-                <flux:table.column>Kategorie</flux:table.column>
-                <flux:table.column></flux:table.column>
-            </flux:table.columns>
-            <flux:table.rows>
-                @forelse ($risks as $risk)
-                    @php
-                        $s = $risk->score();
-                        $b = RiskLevelCategoryEnum::matrixBand($s);
-                    @endphp
-                    <flux:table.row :key="$risk->id">
-                        <flux:table.cell>
-                            <span class="font-mono text-xs"
-                                style="color: var(--fg-subtle);">#{{ str_pad($risk->id, 3, '0', STR_PAD_LEFT) }}</span>
-                        </flux:table.cell>
-                        <flux:table.cell variant="strong">{{ $risk->name }}</flux:table.cell>
-                        <flux:table.cell class="font-mono">{{ $risk->impact }}</flux:table.cell>
-                        <flux:table.cell class="font-mono">{{ $risk->likelihood }}</flux:table.cell>
-                        <flux:table.cell>
-                            <span
-                                class="inline-flex items-center gap-1.5 rounded-full px-2 py-0.5 text-xs font-semibold"
-                                style="background: color-mix(in oklab, var(--risk-{{ $b }}) 15%, var(--bg-elev)); color: var(--risk-{{ $b }}); border: 1px solid color-mix(in oklab, var(--risk-{{ $b }}) 30%, transparent);">
-                                {{ $s }}
-                            </span>
-                        </flux:table.cell>
-                        <flux:table.cell>
-                            <flux:badge size="sm" inset="top bottom" :color="$risk->riskCategory()->fluxColor()">
-                                {{ $risk->riskCategory()->label() }}
-                            </flux:badge>
-                        </flux:table.cell>
-                        <flux:table.cell>
-                            <div class="flex items-center gap-2">
-                                <flux:button size="sm" variant="ghost" icon="pencil" inset="top bottom"
-                                    :href="route('risk.editor', [$project->id, $risk->id])" wire:navigate>
-                                    Upravit
-                                </flux:button>
-                                <flux:button size="sm" variant="danger" icon="trash" inset="top bottom"
-                                    wire:click="deleteRisk({{ $risk->id }})"
-                                    wire:confirm="Smazat riziko {{ $risk->name }}?">
-                                    Smazat
-                                </flux:button>
-                            </div>
-                        </flux:table.cell>
-                    </flux:table.row>
-                @empty
-                    <flux:table.row>
-                        <flux:table.cell colspan="7" class="py-12 text-center">
-                            <flux:icon.shield-exclamation class="mx-auto mb-3 size-10"
-                                style="color: var(--fg-subtle);" />
-                            <p class="text-sm font-medium" style="color: var(--fg-muted);">Žádná rizika</p>
-                            <p class="mt-1 text-xs" style="color: var(--fg-subtle);">Začněte přidáním prvního rizika.
-                            </p>
-                        </flux:table.cell>
-                    </flux:table.row>
-                @endforelse
-            </flux:table.rows>
-        </flux:table>
+            <div class="overflow-hidden">
+                <table class="w-full text-sm">
+                    <thead>
+                        <tr style="border-bottom: 1px solid var(--border); background: var(--bg-elev);">
+                            <th class="px-3 py-2 text-left text-xs font-semibold uppercase tracking-wider"
+                                style="color: var(--fg-subtle);">#</th>
+                            <th class="px-3 py-2 text-left text-xs font-semibold uppercase tracking-wider"
+                                style="color: var(--fg-subtle);">Název</th>
+                            <th class="px-3 py-2 text-left text-xs font-semibold uppercase tracking-wider"
+                                style="color: var(--fg-subtle);">Dopad</th>
+                            <th class="px-3 py-2 text-left text-xs font-semibold uppercase tracking-wider"
+                                style="color: var(--fg-subtle);">Pravd.</th>
+                            <th class="px-3 py-2 text-left text-xs font-semibold uppercase tracking-wider"
+                                style="color: var(--fg-subtle);">Skóre</th>
+                            <th class="px-3 py-2 text-left text-xs font-semibold uppercase tracking-wider"
+                                style="color: var(--fg-subtle);">Úroveň</th>
+                            <th class="px-3 py-2"></th>
+                        </tr>
+                    </thead>
+                    <tbody class="border-b" style="background: var(--bg-elev); border-color: var(--border);">
+                        @forelse ($risks as $risk)
+                            @php
+                                $s = $risk->score();
+                                $b = RiskLevelCategoryEnum::matrixBand($s);
+                            @endphp
+                            <tr id="risk-{{ $risk->id }}"
+                                class="border-t transition-colors"
+                                :style="activeRisk === {{ $risk->id }}
+                                    ? 'border-color: var(--border); background: color-mix(in oklab, var(--risk-{{ $b }}) 12%, var(--bg-elev)); box-shadow: inset 3px 0 0 var(--risk-{{ $b }});'
+                                    : 'border-color: var(--border);'"
+                                @mouseenter="activeRisk = {{ $risk->id }}"
+                                @mouseleave="activeRisk = null">
+                                <td class="px-3 py-2">
+                                    <span class="font-mono text-xs"
+                                        style="color: var(--fg-subtle);">#{{ str_pad($risk->id, 3, '0', STR_PAD_LEFT) }}</span>
+                                </td>
+                                <td class="px-3 py-2">
+                                    <span class="text-sm font-medium"
+                                        style="color: var(--fg);">{{ $risk->name }}</span>
+                                </td>
+                                <td class="px-3 py-2">
+                                    <span class="text-xs"
+                                        style="color: var(--fg-muted);">{{ RiskLevelEnum::bandLabel($risk->impact) }}</span>
+                                </td>
+                                <td class="px-3 py-2">
+                                    <span class="text-xs"
+                                        style="color: var(--fg-muted);">{{ RiskProbabilityEnum::bandLabel($risk->likelihood) }}</span>
+                                </td>
+                                <td class="px-3 py-2">
+                                    <span class="inline-flex items-center rounded-full px-2 py-0.5 text-xs font-bold"
+                                        style="background: color-mix(in oklab, var(--risk-{{ $b }}) 15%, var(--bg-elev)); color: var(--risk-{{ $b }}); border: 1px solid color-mix(in oklab, var(--risk-{{ $b }}) 35%, transparent);">
+                                        {{ $s }}
+                                    </span>
+                                </td>
+                                <td class="px-3 py-2">
+                                    <flux:badge size="sm" inset="top bottom"
+                                        :color="$risk->riskCategory()->fluxColor()">
+                                        {{ $risk->riskCategory()->label() }}
+                                    </flux:badge>
+                                </td>
+                                <td class="px-3 py-2">
+                                    <div class="flex items-center gap-1">
+                                        <flux:button size="sm" variant="ghost" icon="pencil" inset="top bottom"
+                                            :href="route('risk.editor', [$project->id, $risk->id])"
+                                            wire:navigate />
+                                        <flux:button size="sm" variant="danger" icon="trash" inset="top bottom"
+                                            wire:click="deleteRisk({{ $risk->id }})"
+                                            wire:confirm="Smazat riziko {{ $risk->name }}?" />
+                                    </div>
+                                </td>
+                            </tr>
+                        @empty
+                            <tr>
+                                <td colspan="7" class="py-10 text-center">
+                                    <flux:icon.shield-exclamation class="mx-auto mb-3 size-8"
+                                        style="color: var(--fg-subtle);" />
+                                    <p class="text-sm font-medium" style="color: var(--fg-muted);">Žádná rizika</p>
+                                    <p class="mt-0.5 text-xs" style="color: var(--fg-subtle);">Začněte přidáním prvního
+                                        rizika.</p>
+                                </td>
+                            </tr>
+                        @endforelse
+                    </tbody>
+                </table>
+            </div>
+        </div>
     </div>
 </div>

@@ -26,4 +26,26 @@ enum RiskLevelEnum: int
 
         };
     }
+
+    public static function bandLabel(int $value): string
+    {
+        return match (true) {
+            $value <= 2 => 'Nízký',
+            $value <= 4 => 'Střední',
+            $value <= 6 => 'Normální',
+            $value <= 8 => 'Vysoký',
+            default => 'Velmi vysoký',
+        };
+    }
+
+    public static function bands(): array
+    {
+        return [
+            ['label' => 'Nízký',        'min' => 1, 'max' => 2],
+            ['label' => 'Střední',      'min' => 3, 'max' => 4],
+            ['label' => 'Normální',     'min' => 5, 'max' => 6],
+            ['label' => 'Vysoký',       'min' => 7, 'max' => 8],
+            ['label' => 'Velmi vysoký', 'min' => 9, 'max' => 10],
+        ];
+    }
 }
