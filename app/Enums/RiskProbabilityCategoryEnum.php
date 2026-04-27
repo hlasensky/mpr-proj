@@ -13,11 +13,11 @@ enum RiskProbabilityCategoryEnum: int
     public function label(): string
     {
         return match ($this) {
-            self::Low => 'Nízké',
-            self::Medium => 'Střední',
-            self::High => 'Vysoké',
-            self::Danger => 'Nebezpečné',
-            self::Extreme => 'Extrémní',
+            self::Low => 'Nepravděpodobné',
+            self::Medium => 'Málo pravděpodobné',
+            self::High => 'Možné',
+            self::Danger => 'Pravděpodobné',
+            self::Extreme => 'Velmi pravděpodobné',
         };
     }
 }

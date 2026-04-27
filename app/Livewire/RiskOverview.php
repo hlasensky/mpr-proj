@@ -15,6 +15,8 @@ class RiskOverview extends Component
 
     public Collection $risks;
 
+    public string $matrixView = 'grid';
+
     public function mount(int $projectID): void
     {
         $this->project = Project::findOrFail($projectID);

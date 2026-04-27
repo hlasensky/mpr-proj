@@ -24,11 +24,11 @@ enum RiskLevelCategoryEnum: string
     public function label(): string
     {
         return match ($this) {
-            self::Low => 'Nízké',
-            self::Medium => 'Střední',
-            self::High => 'Vysoké',
-            self::Danger => 'Nebezpečné',
-            self::Extreme => 'Extrémní',
+            self::Low => 'Nepravděpodobné',
+            self::Medium => 'Málo pravděpodobné',
+            self::High => 'Možné',
+            self::Danger => 'Pravděpodobné',
+            self::Extreme => 'Velmi pravděpodobné',
         };
     }
 
@@ -40,6 +40,18 @@ enum RiskLevelCategoryEnum: string
             self::High => 'orange',
             self::Danger => 'red',
             self::Extreme => 'rose',
+        };
+    }
+
+    /** Maps a raw score (1–100) to a CSS variable band (1–5) for var(--risk-N). */
+    public static function matrixBand(int $score): int
+    {
+        return match (true) {
+            $score <= 6 => 1,
+            $score <= 10 => 2,
+            $score <= 21 => 3,
+            $score <= 36 => 4,
+            default => 5,
         };
     }
 
