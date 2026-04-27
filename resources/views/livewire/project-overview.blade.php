@@ -1,12 +1,37 @@
 <div>
-    <div class="mb-6 flex items-center justify-between">
+    {{-- Page header --}}
+    <div class="mb-6 flex items-start justify-between">
         <div>
-            <flux:heading size="xl" level="1">Projekty</flux:heading>
-            <flux:text variant="subtle" class="mt-1">Přehled všech projektů a jejich rizik.</flux:text>
+            <h1 class="text-2xl font-semibold tracking-tight" style="color: var(--fg);">Projekty</h1>
+            <p class="mt-1 text-sm" style="color: var(--fg-muted);">Přehled všech projektů a jejich rizik.</p>
         </div>
         <flux:button :href="route('project.editor')" wire:navigate variant="primary" icon="plus">
             Nový projekt
         </flux:button>
+    </div>
+
+    {{-- Stat cards --}}
+    <div class="mb-6 grid grid-cols-2 gap-3 sm:grid-cols-4">
+        <div class="rounded-(--radius) border p-4" style="background: var(--bg-elev); border-color: var(--border); box-shadow: var(--shadow-sm);">
+            <div class="text-xs font-medium uppercase tracking-widest" style="color: var(--fg-subtle);">Aktivní projekty</div>
+            <div class="mt-2 text-3xl font-semibold tracking-tight" style="color: var(--fg);">{{ $projects->count() }}</div>
+        </div>
+        <div class="rounded-(--radius) border p-4" style="background: var(--bg-elev); border-color: var(--border); box-shadow: var(--shadow-sm);">
+            <div class="text-xs font-medium uppercase tracking-widest" style="color: var(--fg-subtle);">Otevřená rizika</div>
+            <div class="mt-2 text-3xl font-semibold tracking-tight" style="color: var(--fg);">{{ $projects->sum('risks_count') }}</div>
+        </div>
+        <div class="rounded-(--radius) border p-4" style="background: var(--bg-elev); border-color: var(--border); box-shadow: var(--shadow-sm);">
+            <div class="text-xs font-medium uppercase tracking-widest" style="color: var(--fg-subtle);">Průměrně rizik</div>
+            <div class="mt-2 text-3xl font-semibold tracking-tight" style="color: var(--fg);">
+                {{ $projects->count() > 0 ? round($projects->avg('risks_count'), 1) : '—' }}
+            </div>
+        </div>
+        <div class="rounded-(--radius) border p-4" style="background: var(--bg-elev); border-color: var(--border); box-shadow: var(--shadow-sm);">
+            <div class="text-xs font-medium uppercase tracking-widest" style="color: var(--fg-subtle);">Nejvíce rizik</div>
+            <div class="mt-2 text-3xl font-semibold tracking-tight" style="color: var(--fg);">
+                {{ $projects->count() > 0 ? $projects->max('risks_count') : '—' }}
+            </div>
+        </div>
     </div>
 
     @if (session('success'))
@@ -16,52 +41,71 @@
     @endif
 
     @if ($projects->isEmpty())
-        <div class="flex flex-col items-center justify-center rounded-xl border border-dashed border-zinc-300 py-16 dark:border-zinc-700">
-            <flux:icon.folder-open class="size-12 text-zinc-400 dark:text-zinc-500" />
-            <flux:heading class="mt-4">Žádné projekty</flux:heading>
-            <flux:text variant="subtle" class="mt-1">Vytvořte svůj první projekt.</flux:text>
+        <div class="flex flex-col items-center justify-center rounded-(--radius) border border-dashed py-16" style="border-color: var(--border);">
+            <flux:icon.folder-open class="size-12" style="color: var(--fg-subtle);" />
+            <h3 class="mt-4 text-base font-semibold" style="color: var(--fg);">Žádné projekty</h3>
+            <p class="mt-1 text-sm" style="color: var(--fg-muted);">Vytvořte svůj první projekt.</p>
             <flux:button :href="route('project.editor')" wire:navigate variant="primary" icon="plus" class="mt-4">
                 Nový projekt
             </flux:button>
         </div>
     @else
-        <div class="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+        <div class="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
             @foreach ($projects as $project)
-                <div class="flex flex-col gap-4 rounded-xl border border-zinc-200 bg-white p-5 shadow-sm dark:border-zinc-700 dark:bg-zinc-900">
-                    <div class="flex items-start justify-between gap-2">
-                        <div class="flex-1 min-w-0">
-                            <flux:heading size="lg" class="truncate">{{ $project->name }}</flux:heading>
-                            @if ($project->description)
-                                <flux:text variant="subtle" class="mt-1 line-clamp-2 text-sm">{{ $project->description }}</flux:text>
-                            @endif
-                        </div>
-                        <flux:badge size="sm" :color="$project->risks_count > 0 ? 'red' : 'green'" class="shrink-0">
-                            {{ $project->risks_count }} {{ $project->risks_count === 1 ? 'riziko' : ($project->risks_count < 5 ? 'rizika' : 'rizik') }}
-                        </flux:badge>
+                @php
+                    $rc = $project->risks_count;
+                    $band = $rc === 0 ? 1 : ($rc <= 3 ? 2 : ($rc <= 7 ? 3 : ($rc <= 11 ? 4 : 5)));
+                @endphp
+                <div class="group relative flex flex-col gap-3 rounded-(--radius) border p-5 transition-shadow"
+                    style="background: var(--bg-elev); border-color: var(--border); box-shadow: var(--shadow-sm);">
+
+                    {{-- Risk count pill (top-right) --}}
+                    <span class="absolute right-4 top-4 inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-xs font-semibold"
+                        style="background: color-mix(in oklab, var(--risk-{{ $band }}) 15%, var(--bg-elev)); color: var(--risk-{{ $band }}); border: 1px solid color-mix(in oklab, var(--risk-{{ $band }}) 30%, transparent);">
+                        <span class="size-1.5 rounded-full" style="background: var(--risk-{{ $band }});"></span>
+                        {{ $rc }} {{ $rc === 1 ? 'riziko' : ($rc < 5 ? 'rizika' : 'rizik') }}
+                    </span>
+
+                    {{-- Title + desc --}}
+                    <div class="pr-20">
+                        <h3 class="truncate text-sm font-semibold" style="color: var(--fg);">{{ $project->name }}</h3>
+                        @if ($project->description)
+                            <p class="mt-1 line-clamp-2 text-xs leading-relaxed" style="color: var(--fg-muted);">{{ $project->description }}</p>
+                        @endif
                     </div>
 
+                    {{-- Dates --}}
                     @if ($project->start_date || $project->end_date)
-                        <div class="flex items-center gap-1 text-sm text-zinc-500 dark:text-zinc-400">
-                            <flux:icon.calendar class="size-4 shrink-0" />
-                            <span>
-                                {{ $project->start_date?->format('d.m.Y') ?? '—' }}
-                                →
-                                {{ $project->end_date?->format('d.m.Y') ?? '—' }}
-                            </span>
+                        <div class="flex items-center gap-1.5 text-xs font-mono" style="color: var(--fg-subtle);">
+                            <flux:icon.calendar class="size-3.5 shrink-0" />
+                            {{ $project->start_date?->format('d.m.Y') ?? '—' }}
+                            →
+                            {{ $project->end_date?->format('d.m.Y') ?? '—' }}
                         </div>
                     @endif
 
+                    {{-- Owner (admin only) --}}
                     @role(\App\Enums\RoleEnum::Admin)
-                        <flux:text variant="subtle" class="text-xs">
-                            Vlastník: {{ $project->user?->name ?? '—' }}
-                        </flux:text>
+                        <p class="text-xs" style="color: var(--fg-subtle);">
+                            Vlastník: <span style="color: var(--fg-muted);">{{ $project->user?->name ?? '—' }}</span>
+                        </p>
                     @endrole
 
-                    <div class="mt-auto border-t border-zinc-100 pt-4 dark:border-zinc-800">
-                        <flux:button size="sm" variant="ghost" icon="arrow-right"
-                            :href="route('risk.overview', $project->id)" wire:navigate class="w-full">
-                            Otevřít projekt
-                        </flux:button>
+                    {{-- Footer --}}
+                    <div class="mt-auto flex items-center justify-between border-t pt-3" style="border-color: var(--border);">
+                        <a href="{{ route('risk.overview', $project->id) }}" wire:navigate
+                            class="inline-flex items-center gap-1 text-xs font-medium transition-colors"
+                            style="color: var(--fg-muted);">
+                            Otevřít
+                            <flux:icon.arrow-right class="size-3.5" />
+                        </a>
+                        @role(\App\Enums\RoleEnum::Admin)
+                            <button wire:click="delete({{ $project->id }})"
+                                wire:confirm="Opravdu smazat projekt {{ $project->name }}?"
+                                class="text-xs transition-colors hover:text-red-500" style="color: var(--fg-subtle);">
+                                <flux:icon.trash class="size-3.5" />
+                            </button>
+                        @endrole
                     </div>
                 </div>
             @endforeach

@@ -1,50 +1,74 @@
 <!DOCTYPE html>
 <html lang="{{ str_replace('_', '-', app()->getLocale()) }}" class="dark">
-    <head>
-        @include('partials.head')
-    </head>
-    <body class="min-h-screen bg-white antialiased dark:bg-linear-to-b dark:from-neutral-950 dark:to-neutral-900">
-        <div class="relative grid h-dvh flex-col items-center justify-center px-8 sm:px-0 lg:max-w-none lg:grid-cols-2 lg:px-0">
-            <div class="bg-muted relative hidden h-full flex-col p-10 text-white lg:flex dark:border-e dark:border-neutral-800">
-                <div class="absolute inset-0 bg-neutral-900"></div>
-                <a href="{{ route('home') }}" class="relative z-20 flex items-center text-lg font-medium" wire:navigate>
-                    <span class="flex h-10 w-10 items-center justify-center rounded-md">
-                        <x-app-logo-icon class="me-2 h-7 fill-current text-white" />
-                    </span>
-                    {{ config('app.name', 'Laravel') }}
-                </a>
+<head>
+    @include('partials.head')
+</head>
+<body class="min-h-screen antialiased" style="background: var(--bg); color: var(--fg);">
+    <div class="grid h-dvh lg:grid-cols-2">
 
-                @php
-                    [$message, $author] = str(Illuminate\Foundation\Inspiring::quotes()->random())->explode('-');
-                @endphp
+        {{-- Left panel --}}
+        <div class="relative hidden lg:flex flex-col p-12" style="background: var(--bg-sunken); border-right: 1px solid var(--border);">
+            {{-- Brand --}}
+            <a href="{{ route('home') }}" class="flex items-center gap-2.5" wire:navigate>
+                <div class="flex size-8 items-center justify-center rounded-md text-sm font-bold"
+                     style="background: var(--fg); color: var(--bg);">R</div>
+                <span class="text-sm font-semibold" style="color: var(--fg);">Risk Manager</span>
+            </a>
 
-                <div class="relative z-20 mt-auto">
-                    <blockquote class="space-y-2">
-                        <flux:heading size="lg">&ldquo;{{ trim($message) }}&rdquo;</flux:heading>
-                        <footer><flux:heading>{{ trim($author) }}</flux:heading></footer>
-                    </blockquote>
-                </div>
-            </div>
-            <div class="w-full lg:p-8">
-                <div class="mx-auto flex w-full flex-col justify-center space-y-6 sm:w-[350px]">
-                    <a href="{{ route('home') }}" class="z-20 flex flex-col items-center gap-2 font-medium lg:hidden" wire:navigate>
-                        <span class="flex h-9 w-9 items-center justify-center rounded-md">
-                            <x-app-logo-icon class="size-9 fill-current text-black dark:text-white" />
-                        </span>
+            {{-- Hero text --}}
+            <div class="mt-auto max-w-sm">
+                <p class="text-xs font-semibold uppercase tracking-widest mb-4" style="color: var(--fg-subtle);">MPR projekt</p>
+                <h2 class="text-3xl font-semibold tracking-tight leading-tight mb-4" style="color: var(--fg); font-family: 'Instrument Serif', serif;">
+                    Řízení rizik pro moderní projekty
+                </h2>
+                <p class="text-sm leading-relaxed" style="color: var(--fg-muted);">
+                    Sledujte, hodnoťte a mitigujte projektová rizika přehledně na jednom místě.
+                </p>
 
-                        <span class="sr-only">{{ config('app.name', 'Laravel') }}</span>
-                    </a>
-                    {{ $slot }}
+                <div class="mt-8 space-y-3">
+                    @foreach ([
+                        ['5×5 matice rizik', 'Vizualizace dopadu a pravděpodobnosti'],
+                        ['Správa projektů', 'Přehled všech rizik v jednom místě'],
+                        ['Světlý i tmavý režim', 'Přizpůsobte si prostředí podle sebe'],
+                    ] as [$title, $desc])
+                        <div class="flex items-start gap-3">
+                            <div class="mt-0.5 size-5 rounded-full flex items-center justify-center shrink-0"
+                                 style="background: color-mix(in oklab, var(--risk-2) 20%, var(--bg-sunken)); color: var(--risk-2);">
+                                <svg class="size-3" fill="none" viewBox="0 0 24 24" stroke-width="2.5" stroke="currentColor">
+                                    <path stroke-linecap="round" stroke-linejoin="round" d="m4.5 12.75 6 6 9-13.5" />
+                                </svg>
+                            </div>
+                            <div>
+                                <div class="text-xs font-semibold" style="color: var(--fg);">{{ $title }}</div>
+                                <div class="text-xs" style="color: var(--fg-muted);">{{ $desc }}</div>
+                            </div>
+                        </div>
+                    @endforeach
                 </div>
             </div>
         </div>
 
-        @persist('toast')
-            <flux:toast.group>
-                <flux:toast />
-            </flux:toast.group>
-        @endpersist
+        {{-- Right panel: form slot --}}
+        <div class="flex items-center justify-center px-8 py-12">
+            <div class="w-full max-w-sm">
+                {{-- Mobile brand --}}
+                <a href="{{ route('home') }}" class="mb-8 flex items-center gap-2.5 lg:hidden" wire:navigate>
+                    <div class="flex size-8 items-center justify-center rounded-md text-sm font-bold"
+                         style="background: var(--fg); color: var(--bg);">R</div>
+                    <span class="text-sm font-semibold" style="color: var(--fg);">Risk Manager</span>
+                </a>
 
-        @fluxScripts
-    </body>
+                {{ $slot }}
+            </div>
+        </div>
+    </div>
+
+    @persist('toast')
+        <flux:toast.group>
+            <flux:toast />
+        </flux:toast.group>
+    @endpersist
+
+    @fluxScripts
+</body>
 </html>

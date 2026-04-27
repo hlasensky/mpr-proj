@@ -8,9 +8,12 @@ use App\Livewire\UserEditor;
 use App\Livewire\UserOverview;
 use Illuminate\Support\Facades\Route;
 
-Route::view('/', 'welcome')->name('home');
 
 Route::middleware(['auth', 'verified', 'role_auth'])->group(function () {
+    Route::get('/', function () {
+        return redirect()->route('dashboard');
+    })->name('home');
+
     Route::group(['prefix' => '/project'], function () {
         Route::get('overview', ProjectOverview::class)->name('dashboard');
         Route::get('editor/{projectID?}', ProjectEditor::class)->name('project.editor');
@@ -31,4 +34,4 @@ Route::get('please-wait-for-verification', function () {
     return view('please-wait-for-verification');
 })->name('please_wait_for_verification');
 
-require __DIR__.'/settings.php';
+require __DIR__ . '/settings.php';
