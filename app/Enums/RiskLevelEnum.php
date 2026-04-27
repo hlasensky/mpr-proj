@@ -2,7 +2,7 @@
 
 namespace App\Enums;
 
-enum RiskLevelEnum:int
+enum RiskLevelEnum: int
 {
     case one = 1;
     case two = 2;
@@ -15,16 +15,15 @@ enum RiskLevelEnum:int
     case nine = 9;
     case ten = 10;
 
-    public function riskCategory():RiskCategoryEnum
+    public function riskCategory(): RiskLevelCategoryEnum
     {
         return match ($this) {
-            self::one, self::two => RiskCategoryEnum::Low,
-            self::three, self::four => RiskCategoryEnum::Medium,
-            self::five, self::six => RiskCategoryEnum::High,
-            self::seven, self::eight => RiskCategoryEnum::Danger,
-            self::nine, self::ten => RiskCategoryEnum::Extreme,
+            self::one, self::two => RiskLevelCategoryEnum::Low,
+            self::three, self::four => RiskLevelCategoryEnum::Medium,
+            self::five, self::six => RiskLevelCategoryEnum::High,
+            self::seven, self::eight => RiskLevelCategoryEnum::Danger,
+            self::nine, self::ten => RiskLevelCategoryEnum::Extreme,
 
         };
     }
-
 }

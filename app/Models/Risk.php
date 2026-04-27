@@ -2,7 +2,7 @@
 
 namespace App\Models;
 
-use App\Enums\RiskCategoryEnum;
+use App\Enums\RiskLevelCategoryEnum;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -31,9 +31,9 @@ class Risk extends Model
         return $this->impact * $this->likelihood;
     }
 
-    public function riskCategory(): RiskCategoryEnum
+    public function riskCategory(): RiskLevelCategoryEnum
     {
-        return RiskCategoryEnum::fromScore($this->score());
+        return RiskLevelCategoryEnum::fromScore($this->score());
     }
 
     public function user(): BelongsTo

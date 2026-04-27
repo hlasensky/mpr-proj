@@ -1,14 +1,14 @@
 <div>
     @php
-        use App\Enums\RiskCategoryEnum;
+        use App\Enums\RiskLevelCategoryEnum;
 
         // 5×5 zone matrix — indexed [likelihood][impact]
         $zones = [
-            5 => [1 => RiskCategoryEnum::Medium, 2 => RiskCategoryEnum::High,   3 => RiskCategoryEnum::Danger,  4 => RiskCategoryEnum::Extreme, 5 => RiskCategoryEnum::Extreme],
-            4 => [1 => RiskCategoryEnum::Medium, 2 => RiskCategoryEnum::High,   3 => RiskCategoryEnum::High,    4 => RiskCategoryEnum::Danger,  5 => RiskCategoryEnum::Extreme],
-            3 => [1 => RiskCategoryEnum::Low,    2 => RiskCategoryEnum::Medium, 3 => RiskCategoryEnum::High,    4 => RiskCategoryEnum::High,    5 => RiskCategoryEnum::Danger],
-            2 => [1 => RiskCategoryEnum::Low,    2 => RiskCategoryEnum::Low,    3 => RiskCategoryEnum::Medium,  4 => RiskCategoryEnum::High,    5 => RiskCategoryEnum::High],
-            1 => [1 => RiskCategoryEnum::Low,    2 => RiskCategoryEnum::Low,    3 => RiskCategoryEnum::Low,     4 => RiskCategoryEnum::Medium,  5 => RiskCategoryEnum::Medium],
+            5 => [1 => RiskLevelCategoryEnum::Medium, 2 => RiskLevelCategoryEnum::High,   3 => RiskLevelCategoryEnum::Danger,  4 => RiskLevelCategoryEnum::Extreme, 5 => RiskLevelCategoryEnum::Extreme],
+            4 => [1 => RiskLevelCategoryEnum::Medium, 2 => RiskLevelCategoryEnum::High,   3 => RiskLevelCategoryEnum::High,    4 => RiskLevelCategoryEnum::Danger,  5 => RiskLevelCategoryEnum::Extreme],
+            3 => [1 => RiskLevelCategoryEnum::Low,    2 => RiskLevelCategoryEnum::Medium, 3 => RiskLevelCategoryEnum::High,    4 => RiskLevelCategoryEnum::High,    5 => RiskLevelCategoryEnum::Danger],
+            2 => [1 => RiskLevelCategoryEnum::Low,    2 => RiskLevelCategoryEnum::Low,    3 => RiskLevelCategoryEnum::Medium,  4 => RiskLevelCategoryEnum::High,    5 => RiskLevelCategoryEnum::High],
+            1 => [1 => RiskLevelCategoryEnum::Low,    2 => RiskLevelCategoryEnum::Low,    3 => RiskLevelCategoryEnum::Low,     4 => RiskLevelCategoryEnum::Medium,  5 => RiskLevelCategoryEnum::Medium],
         ];
 
         // Group risks by [likelihood][impact]
@@ -99,7 +99,7 @@
 
                 {{-- Legend --}}
                 <div class="mt-4 flex flex-wrap gap-3 pl-8">
-                    @foreach (RiskCategoryEnum::cases() as $cat)
+                    @foreach (RiskLevelCategoryEnum::cases() as $cat)
                         <div class="flex items-center gap-1.5">
                             <span class="size-3 rounded-sm {{ $cat->cellClass() }} border border-white/20"></span>
                             <span class="text-xs text-zinc-600 dark:text-zinc-400">{{ $cat->label() }}</span>

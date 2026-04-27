@@ -2,6 +2,8 @@
 
 namespace Database\Factories;
 
+use App\Enums\RiskLevelEnum;
+use App\Enums\RiskProbabilityEnum;
 use App\Models\Project;
 use App\Models\Risk;
 use App\Models\User;
@@ -18,8 +20,8 @@ class RiskFactory extends Factory
             'name' => fake()->sentence(4, false),
             'user_id' => User::factory(),
             'project_id' => Project::factory(),
-            'impact' => fake()->numberBetween(1, 5),
-            'likelihood' => fake()->numberBetween(1, 5),
+            'impact' => fake()->randomElement(RiskLevelEnum::cases())->value,
+            'likelihood' => fake()->randomElement(RiskProbabilityEnum::cases())->value,
         ];
     }
 }

@@ -2,7 +2,7 @@
 
 namespace App\Enums;
 
-enum RiskCategoryEnum: string
+enum RiskLevelCategoryEnum: string
 {
     case Low = 'low';
     case Medium = 'medium';

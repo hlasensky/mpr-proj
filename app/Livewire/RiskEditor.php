@@ -38,8 +38,8 @@ class RiskEditor extends Component
     {
         return [
             'name' => ['required', 'string', 'max:255'],
-            'impact' => ['required', 'integer', 'min:1', 'max:5'],
-            'likelihood' => ['required', 'integer', 'min:1', 'max:5'],
+            'impact' => ['required', 'integer', 'min:1', 'max:10'],
+            'likelihood' => ['required', 'integer', 'min:1', 'max:10'],
         ];
     }
 

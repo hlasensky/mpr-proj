@@ -16,9 +16,9 @@
         </flux:field>
 
         <flux:field>
-            <flux:label>Dopad (Impact) <span class="text-zinc-400 text-sm font-normal">1 = minimální, 5 = katastrofální</span></flux:label>
+            <flux:label>Dopad (Impact) <span class="text-zinc-400 text-sm font-normal">1 = minimální, 10 = katastrofální</span></flux:label>
             <flux:radio.group wire:model.number="impact" variant="segmented">
-                @foreach (range(1, 5) as $val)
+                @foreach (range(1, 10) as $val)
                     <flux:radio :value="$val" :label="(string) $val" />
                 @endforeach
             </flux:radio.group>
@@ -26,9 +26,9 @@
         </flux:field>
 
         <flux:field>
-            <flux:label>Pravděpodobnost (Likelihood) <span class="text-zinc-400 text-sm font-normal">1 = vzácné, 5 = téměř jisté</span></flux:label>
+            <flux:label>Pravděpodobnost (Likelihood) <span class="text-zinc-400 text-sm font-normal">1 = vzácné, 10 = téměř jisté</span></flux:label>
             <flux:radio.group wire:model.number="likelihood" variant="segmented">
-                @foreach (range(1, 5) as $val)
+                @foreach (range(1, 10) as $val)
                     <flux:radio :value="$val" :label="(string) $val" />
                 @endforeach
             </flux:radio.group>
@@ -37,7 +37,7 @@
 
         <div class="flex items-center gap-3">
             <flux:button type="submit" variant="primary">Uložit</flux:button>
-            <flux:button :href="route('risk.overview', $projectID)" wire:navigate variant="ghost">Zrušit</flux:button>
+            <flux:button :href="url()->previous()" wire:navigate variant="ghost">Zrušit</flux:button>
         </div>
     </form>
 </div>
