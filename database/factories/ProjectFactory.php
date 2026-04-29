@@ -19,7 +19,6 @@ class ProjectFactory extends Factory
             'name' => fake()->words(3, true),
             'user_id' => User::factory(),
             'description' => fake()->sentences(2, true),
-            'index' => fake()->numberBetween(1, 100),
             'start_date' => $start,
             'end_date' => fake()->optional(0.7)->dateTimeBetween($start, '+2 years'),
         ];

@@ -43,7 +43,7 @@ class ProjectEditor extends Component
         $rules = [
             'name' => ['required', 'string', 'max:255'],
             'description' => ['nullable', 'string'],
-            'startDate' => ['nullable', 'date'],
+            'startDate' => ['required', 'date'],
             'endDate' => ['nullable', 'date', 'after_or_equal:startDate'],
         ];
 
@@ -60,7 +60,7 @@ class ProjectEditor extends Component
 
         $this->project->name = $this->name;
         $this->project->description = $this->description ?: null;
-        $this->project->start_date = $this->startDate ?: null;
+        $this->project->start_date = $this->startDate;
         $this->project->end_date = $this->endDate ?: null;
 
         if (! $this->project->exists) {

@@ -15,15 +15,14 @@ class Project extends Model
         'name',
         'user_id', // owner
         'description',
-        'index',
         'start_date',
         'end_date',
     ];
 
     protected $casts = [
         'user_id' => 'integer',
-        'start_date' => 'datetime',
-        'end_date' => 'datetime',
+        'start_date' => 'date',
+        'end_date' => 'date',
     ];
 
     public function user(): BelongsTo

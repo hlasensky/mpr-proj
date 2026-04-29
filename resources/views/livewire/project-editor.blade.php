@@ -44,7 +44,7 @@
                         <div class="grid grid-cols-2 gap-4">
                             <flux:field>
                                 <flux:label>Datum zahájení</flux:label>
-                                <flux:input wire:model="startDate" type="date" />
+                                <flux:input wire:model="startDate" type="date" required />
                                 <flux:error name="startDate" />
                             </flux:field>
                             <flux:field>

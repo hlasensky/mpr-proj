@@ -15,9 +15,8 @@ return new class extends Migration
             $table->id();
             $table->string('name');
             $table->foreignId('user_id');
-            $table->string('description');
-            $table->integer('index');
-            $table->date('start_date');
+            $table->string('description')->nullable();
+            $table->date('start_date')->nullable();
             $table->date('end_date')->nullable();
             $table->timestamps();
         });
