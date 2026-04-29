@@ -56,6 +56,20 @@
                                 <flux:error name="endDate" />
                             </flux:field>
                         </div>
+
+                        @if ($project?->exists && auth()->user()?->role === \App\Enums\RoleEnum::Admin)
+                            <flux:field>
+                                <flux:label>Vlastník projektu</flux:label>
+                                <flux:select wire:model="ownerId">
+                                    @foreach ($managers as $manager)
+                                        <flux:select.option value="{{ $manager->id }}">
+                                            {{ $manager->name }} ({{ $manager->email }})
+                                        </flux:select.option>
+                                    @endforeach
+                                </flux:select>
+                                <flux:error name="ownerId" />
+                            </flux:field>
+                        @endif
                     </div>
                 </div>
 

@@ -2,7 +2,9 @@
 
 namespace App\Livewire;
 
+use App\Enums\RoleEnum;
 use App\Models\Project;
+use App\Models\User;
 use Illuminate\Support\Facades\Auth;
 use Livewire\Attributes\Layout;
 use Livewire\Component;
@@ -20,6 +22,8 @@ class ProjectEditor extends Component
 
     public string $endDate = '';
 
+    public ?int $ownerId = null;
+
     public function mount(?int $projectID = null): void
     {
         if ($projectID) {
@@ -28,6 +32,7 @@ class ProjectEditor extends Component
             $this->description = $this->project->description ?? '';
             $this->startDate = $this->project->start_date?->format('Y-m-d') ?? '';
             $this->endDate = $this->project->end_date?->format('Y-m-d') ?? '';
+            $this->ownerId = $this->project->user_id;
         } else {
             $this->project = new Project;
         }
@@ -35,12 +40,18 @@ class ProjectEditor extends Component
 
     protected function rules(): array
     {
-        return [
+        $rules = [
             'name' => ['required', 'string', 'max:255'],
             'description' => ['nullable', 'string'],
             'startDate' => ['nullable', 'date'],
             'endDate' => ['nullable', 'date', 'after_or_equal:startDate'],
         ];
+
+        if ($this->isAdmin()) {
+            $rules['ownerId'] = ['nullable', 'integer', 'exists:users,id'];
+        }
+
+        return $rules;
     }
 
     public function save(): void
@@ -54,6 +65,8 @@ class ProjectEditor extends Component
 
         if (! $this->project->exists) {
             $this->project->user_id = Auth::id();
+        } elseif ($this->isAdmin() && $this->ownerId) {
+            $this->project->user_id = $this->ownerId;
         }
 
         $this->project->save();
@@ -65,6 +78,17 @@ class ProjectEditor extends Component
 
     public function render()
     {
-        return view('livewire.project-editor');
+        $managers = $this->isAdmin()
+            ? User::whereIn('role', [RoleEnum::Manager->value, RoleEnum::Admin->value])
+                ->orderBy('name')
+                ->get(['id', 'name', 'email'])
+            : collect();
+
+        return view('livewire.project-editor', ['managers' => $managers]);
+    }
+
+    private function isAdmin(): bool
+    {
+        return Auth::user()?->role === RoleEnum::Admin;
     }
 }
