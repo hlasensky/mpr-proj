@@ -20,7 +20,7 @@ class ProjectEditor extends Component
 
     public string $startDate = '';
 
-    public string $endDate = '';
+    public ?string $endDate = null;
 
     public ?int $ownerId = null;
 
@@ -47,8 +47,8 @@ class ProjectEditor extends Component
             'endDate' => ['nullable', 'date', 'after_or_equal:startDate'],
         ];
 
-        if ($this->isAdmin()) {
-            $rules['ownerId'] = ['nullable', 'integer', 'exists:users,id'];
+        if ($this->isAdmin() && $this->project?->exists) {
+            $rules['ownerId'] = ['required', 'integer', 'exists:users,id'];
         }
 
         return $rules;
