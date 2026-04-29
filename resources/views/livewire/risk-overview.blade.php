@@ -255,8 +255,8 @@
                 </div>
             </div>
 
-            <div class="overflow-hidden">
-                <table class="w-full text-sm">
+            <div class="overflow-auto">
+                <table class="w-full text-sm ">
                     <thead>
                         <tr style="border-bottom: 1px solid var(--border); background: var(--bg-elev);">
                             <th class="px-3 py-2 text-left text-xs font-semibold uppercase tracking-wider"
