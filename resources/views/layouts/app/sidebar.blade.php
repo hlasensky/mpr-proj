@@ -216,7 +216,7 @@
                 <flux:menu.separator />
                 <flux:menu.radio.group>
                     <flux:menu.item :href="route('profile.edit')" icon="cog" wire:navigate>
-                        {{ __('Settings') }}
+                        {{ __('Nastavení') }}
                     </flux:menu.item>
                 </flux:menu.radio.group>
                 <flux:menu.separator />
@@ -224,7 +224,7 @@
                     @csrf
                     <flux:menu.item as="button" type="submit" icon="arrow-right-start-on-rectangle"
                         class="w-full cursor-pointer">
-                        {{ __('Log out') }}
+                        {{ __('Odhlásit se') }}
                     </flux:menu.item>
                 </form>
             </flux:menu>
